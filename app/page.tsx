@@ -42,6 +42,22 @@ const ENDPOINTS = [
     badge: "bg-purple-100 text-purple-700",
     badgeLabel: "WARN",
   },
+  {
+    label: "Stack Trace (NaN)",
+    path: "/api/log-trace?price=abc&discount=10",
+    description: "Passes invalid input through a 3-level call chain — Pino captures the full stack.",
+    color: "bg-orange-50 border-orange-200 hover:bg-orange-100",
+    badge: "bg-orange-100 text-orange-700",
+    badgeLabel: "TRACE",
+  },
+  {
+    label: "Stack Trace (RangeError)",
+    path: "/api/log-trace?price=100&discount=999",
+    description: "Triggers a RangeError deep in the call chain — stack trace shows exact throw site.",
+    color: "bg-orange-50 border-orange-200 hover:bg-orange-100",
+    badge: "bg-orange-100 text-orange-700",
+    badgeLabel: "TRACE",
+  },
 ];
 
 export default function Home() {

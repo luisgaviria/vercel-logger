@@ -5,22 +5,20 @@ export async function GET(request: NextRequest) {
   const requestId = crypto.randomUUID();
   const start = Date.now();
 
-  logger.info("Slow request started", { requestId });
+  logger.info({ requestId }, "Slow request started");
 
   await new Promise((resolve) => setTimeout(resolve, 2000));
 
   const durationMs = Date.now() - start;
 
   if (durationMs > 1500) {
-    logger.warn("Slow response detected", {
-      requestId,
-      durationMs,
-      threshold: 1500,
-      path: request.nextUrl.pathname,
-    });
+    logger.warn(
+      { requestId, durationMs, threshold: 1500, path: request.nextUrl.pathname },
+      "Slow response detected"
+    );
   }
 
-  logger.info("Slow request completed", { requestId, durationMs });
+  logger.info({ requestId, durationMs }, "Slow request completed");
 
   return NextResponse.json({
     ok: true,

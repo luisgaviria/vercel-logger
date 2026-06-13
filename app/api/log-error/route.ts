@@ -4,21 +4,19 @@ import { logger } from "@/lib/logger";
 export async function GET(request: NextRequest) {
   const requestId = crypto.randomUUID();
 
-  logger.info("Handling error-test request", { requestId });
+  logger.info({ requestId }, "Handling error-test request");
 
   try {
     throw new Error("Simulated downstream service failure");
   } catch (err) {
-    const error = err as Error;
-    logger.error("Unhandled exception caught", {
-      requestId,
-      errorMessage: error.message,
-      stack: error.stack,
-      path: request.nextUrl.pathname,
-    });
+    // Pino's built-in err serializer captures name, message, and stack automatically
+    logger.error(
+      { err, requestId, path: request.nextUrl.pathname },
+      "Unhandled exception caught"
+    );
 
     return NextResponse.json(
-      { ok: false, requestId, error: error.message },
+      { ok: false, requestId, error: (err as Error).message },
       { status: 500 }
     );
   }

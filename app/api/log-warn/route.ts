@@ -4,23 +4,21 @@ import { logger } from "@/lib/logger";
 export async function GET(request: NextRequest) {
   const requestId = crypto.randomUUID();
 
-  logger.info("Handling warn request", { requestId });
+  logger.info({ requestId }, "Handling warn request");
 
-  logger.warn("Deprecated endpoint called", {
-    requestId,
-    path: request.nextUrl.pathname,
-    recommendation: "Use /api/log-info instead",
-  });
+  logger.warn(
+    {
+      requestId,
+      path: request.nextUrl.pathname,
+      recommendation: "Use /api/log-info instead",
+    },
+    "Deprecated endpoint called"
+  );
 
-  logger.warn("Rate limit threshold approaching", {
-    requestId,
-    currentRpm: 480,
-    limitRpm: 500,
-  });
+  logger.warn(
+    { requestId, currentRpm: 480, limitRpm: 500 },
+    "Rate limit threshold approaching"
+  );
 
-  return NextResponse.json({
-    ok: true,
-    requestId,
-    message: "Warning logs emitted.",
-  });
+  return NextResponse.json({ ok: true, requestId, message: "Warning logs emitted." });
 }
