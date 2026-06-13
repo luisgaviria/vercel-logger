@@ -1,65 +1,142 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
+
+interface Result {
+  endpoint: string;
+  status: number;
+  data: unknown;
+  durationMs: number;
+}
+
+const ENDPOINTS = [
+  {
+    label: "Info Logs",
+    path: "/api/log-info",
+    description: "Emits structured info-level logs with request metadata.",
+    color: "bg-blue-50 border-blue-200 hover:bg-blue-100",
+    badge: "bg-blue-100 text-blue-700",
+    badgeLabel: "INFO",
+  },
+  {
+    label: "Warn Logs",
+    path: "/api/log-warn",
+    description: "Emits warning logs for deprecated usage and rate limits.",
+    color: "bg-yellow-50 border-yellow-200 hover:bg-yellow-100",
+    badge: "bg-yellow-100 text-yellow-700",
+    badgeLabel: "WARN",
+  },
+  {
+    label: "Error Logs",
+    path: "/api/log-error",
+    description: "Simulates a caught exception with full stack trace logged.",
+    color: "bg-red-50 border-red-200 hover:bg-red-100",
+    badge: "bg-red-100 text-red-700",
+    badgeLabel: "ERROR",
+  },
+  {
+    label: "Slow Response",
+    path: "/api/log-slow",
+    description: "Adds a 2s artificial delay and logs a slow-response warning.",
+    color: "bg-purple-50 border-purple-200 hover:bg-purple-100",
+    badge: "bg-purple-100 text-purple-700",
+    badgeLabel: "WARN",
+  },
+];
 
 export default function Home() {
+  const [results, setResults] = useState<Result[]>([]);
+  const [loading, setLoading] = useState<string | null>(null);
+
+  async function trigger(path: string) {
+    setLoading(path);
+    const start = Date.now();
+    try {
+      const res = await fetch(path);
+      const data = await res.json();
+      setResults((prev) => [
+        { endpoint: path, status: res.status, data, durationMs: Date.now() - start },
+        ...prev,
+      ]);
+    } finally {
+      setLoading(null);
+    }
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div className="min-h-screen bg-gray-50 font-sans">
+      <div className="max-w-3xl mx-auto px-6 py-16">
+        <div className="mb-10">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Vercel Logging MVP</h1>
+          <p className="text-gray-500 text-sm">
+            Click each button to fire an API route. All logs appear as structured JSON in{" "}
+            <span className="font-medium text-gray-700">Vercel → Project → Logs</span>.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        <div className="grid gap-4 mb-10">
+          {ENDPOINTS.map((ep) => (
+            <div
+              key={ep.path}
+              className={`flex items-center justify-between rounded-xl border px-5 py-4 transition-colors ${ep.color}`}
+            >
+              <div className="flex items-center gap-3">
+                <span className={`text-xs font-bold px-2 py-0.5 rounded ${ep.badge}`}>
+                  {ep.badgeLabel}
+                </span>
+                <div>
+                  <p className="font-semibold text-gray-800 text-sm">{ep.label}</p>
+                  <p className="text-gray-500 text-xs mt-0.5">{ep.description}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => trigger(ep.path)}
+                disabled={loading === ep.path}
+                className="ml-4 shrink-0 rounded-lg bg-white border border-gray-200 px-4 py-1.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              >
+                {loading === ep.path ? "..." : "Trigger"}
+              </button>
+            </div>
+          ))}
         </div>
-      </main>
+
+        {results.length > 0 && (
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                Response Log
+              </h2>
+              <button
+                onClick={() => setResults([])}
+                className="text-xs text-gray-400 hover:text-gray-600"
+              >
+                Clear
+              </button>
+            </div>
+            <div className="space-y-3">
+              {results.map((r, i) => (
+                <div
+                  key={i}
+                  className="rounded-lg border border-gray-200 bg-white px-4 py-3 text-xs font-mono"
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <span
+                      className={`font-bold ${r.status >= 500 ? "text-red-600" : "text-green-600"}`}
+                    >
+                      {r.status}
+                    </span>
+                    <span className="text-gray-500">{r.endpoint}</span>
+                    <span className="ml-auto text-gray-400">{r.durationMs}ms</span>
+                  </div>
+                  <pre className="text-gray-600 whitespace-pre-wrap break-all">
+                    {JSON.stringify(r.data, null, 2)}
+                  </pre>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
