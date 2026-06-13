@@ -58,6 +58,46 @@ const ENDPOINTS = [
     badge: "bg-orange-100 text-orange-700",
     badgeLabel: "TRACE",
   },
+  {
+    label: "Middleware: TypeError",
+    path: "/api/log-middleware-test?scenario=type",
+    description: "Reads a property off null — withErrorLogging pinpoints the exact line.",
+    color: "bg-rose-50 border-rose-200 hover:bg-rose-100",
+    badge: "bg-rose-100 text-rose-700",
+    badgeLabel: "MW",
+  },
+  {
+    label: "Middleware: RangeError",
+    path: "/api/log-middleware-test?scenario=range",
+    description: "Allocates an array with negative length — origin frame logged automatically.",
+    color: "bg-rose-50 border-rose-200 hover:bg-rose-100",
+    badge: "bg-rose-100 text-rose-700",
+    badgeLabel: "MW",
+  },
+  {
+    label: "Middleware: SyntaxError",
+    path: "/api/log-middleware-test?scenario=syntax",
+    description: "Parses malformed JSON — middleware intercepts before it reaches Next.js.",
+    color: "bg-rose-50 border-rose-200 hover:bg-rose-100",
+    badge: "bg-rose-100 text-rose-700",
+    badgeLabel: "MW",
+  },
+  {
+    label: "Middleware: Custom Error",
+    path: "/api/log-middleware-test?scenario=custom",
+    description: "Throws a DatabaseError subclass — Pino logs name, query, and code fields.",
+    color: "bg-rose-50 border-rose-200 hover:bg-rose-100",
+    badge: "bg-rose-100 text-rose-700",
+    badgeLabel: "MW",
+  },
+  {
+    label: "Middleware: Async Error",
+    path: "/api/log-middleware-test?scenario=async",
+    description: "Rejects a promise after 50ms — middleware catches async throws too.",
+    color: "bg-rose-50 border-rose-200 hover:bg-rose-100",
+    badge: "bg-rose-100 text-rose-700",
+    badgeLabel: "MW",
+  },
 ];
 
 export default function Home() {

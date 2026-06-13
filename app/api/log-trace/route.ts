@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { logger } from "@/lib/logger";
+import { withErrorLogging } from "@/lib/with-error-logging";
 
-// Simulates a deep call chain so Pino captures a meaningful stack trace
 function parseUserInput(raw: string): number {
   const value = Number(raw);
   if (isNaN(value)) {
@@ -23,28 +23,18 @@ function processOrder(rawPrice: string, rawDiscount: string) {
   return computeDiscount(price, discount);
 }
 
-export async function GET(request: NextRequest) {
-  const requestId = crypto.randomUUID();
+async function handler(request: NextRequest): Promise<NextResponse> {
   const { searchParams } = request.nextUrl;
-
-  // Defaults that intentionally trigger failures:
-  //   ?price=abc  → TypeError  (NaN input)
-  //   ?discount=999 → RangeError (discount > 100)
   const rawPrice = searchParams.get("price") ?? "abc";
   const rawDiscount = searchParams.get("discount") ?? "10";
 
-  logger.info({ requestId, rawPrice, rawDiscount }, "Processing order request");
+  logger.info({ rawPrice, rawDiscount }, "Processing order request");
 
-  try {
-    const finalPrice = processOrder(rawPrice, rawDiscount);
-    logger.info({ requestId, finalPrice }, "Order processed successfully");
-    return NextResponse.json({ ok: true, requestId, finalPrice });
-  } catch (err) {
-    // { err } triggers Pino's error serializer: captures name, message, and full stack
-    logger.error({ err, requestId, rawPrice, rawDiscount }, "Order processing failed");
-    return NextResponse.json(
-      { ok: false, requestId, error: (err as Error).message },
-      { status: 400 }
-    );
-  }
+  // No try/catch — withErrorLogging intercepts, parses the stack, and logs the origin
+  const finalPrice = processOrder(rawPrice, rawDiscount);
+
+  logger.info({ finalPrice }, "Order processed successfully");
+  return NextResponse.json({ ok: true, finalPrice });
 }
+
+export const GET = withErrorLogging(handler);
